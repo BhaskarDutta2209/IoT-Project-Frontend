@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 // import { Connector } from 'mqtt-react-hooks'
 
 // const mqtt = require('mqtt')
@@ -21,6 +22,28 @@ function handleStop() {
 
 // Creating the landing page
 export default function LandingPage() {
+  const [isLedOn, setIsLedOn] = React.useState(false)
+  const [isSensorOn, setIsSensorOn] = React.useState(false)
+
+  useEffect(() => {
+    console.log('useEffect')
+    axios.get('http://localhost:8000/status').then((res) => {
+      console.log(res.data.status)
+      setIsLedOn(res.data.status)
+    })
+
+    setInterval(() => {
+      axios.get('http://localhost:8000/status').then((res) => {
+        console.log(res.data.status)
+        setIsLedOn(res.data.status)
+      })
+    }, 1000)
+
+    console.log(isLedOn)
+
+    return () => {}
+  }, [])
+
   return (
     <div>
       <h1
@@ -33,11 +56,41 @@ export default function LandingPage() {
       </h1>
 
       <div>
-        <button onClick={handleStart}>Start</button>
+        <button
+          onClick={() => {
+            setIsSensorOn(true), handleStart()
+          }}
+        >
+          Start
+        </button>
       </div>
       <div>
-        <button onClick={handleStop}>Stop</button>
+        <button
+          onClick={() => {
+            setIsSensorOn(false), handleStop()
+          }}
+        >
+          Stop
+        </button>
       </div>
+      {/* {isLedOn ? (
+        <div>
+          <h1 style={{ color: 'white' }}>LED ON</h1>
+        </div>
+      ) : (
+        <div>
+          <h1 style={{ color: 'white' }}>LED OFF</h1>
+        </div>
+      )} */}
+      {isSensorOn ? (
+        isLedOn ? (
+          <h1 style={{ color: 'white' }}>LED ON</h1>
+        ) : (
+          <h1 style={{ color: 'white' }}>LED OFF</h1>
+        )
+      ) : (
+        <h1 style={{ color: 'white' }}>Sensor is off</h1>
+      )}
     </div>
   )
 }
